@@ -78,15 +78,19 @@
 
         public void Refresh()
         {
-            // TODO: Remove deleted
-            var newDirectoryCatalogs = GetFoldersRecursive(_path)
-                .Where(dir => _aggregateCatalog.Catalogs.Cast<DirectoryCatalog>().All(catalog => catalog.Path != dir))
-                .Select(dir => new DirectoryCatalog(dir, _searchPattern));
+            var directoryCatalogs = _aggregateCatalog.Catalogs.Cast<DirectoryCatalog>().ToList();
+            IEnumerable<string> foldersRecursive = GetFoldersRecursive(_path);
 
+            directoryCatalogs.ForEach(catalog => catalog.Refresh());
+
+            var newDirectoryCatalogs = foldersRecursive
+                .Where(dir => directoryCatalogs.All(catalog => catalog.Path != dir))
+                .Select(dir => new DirectoryCatalog(dir, _searchPattern));
             newDirectoryCatalogs.ToList().ForEach(_aggregateCatalog.Catalogs.Add);
 
-            _aggregateCatalog.Catalogs.Cast<DirectoryCatalog>().ToList()
-                .ForEach(catalog => catalog.Refresh());
+            var removedDirectoryCatalogs = directoryCatalogs
+                .Where(cat => !foldersRecursive.Contains(cat.Path));
+            removedDirectoryCatalogs.ToList().ForEach(cat => _aggregateCatalog.Catalogs.Remove(cat));
         }
 
         /// <summary>
