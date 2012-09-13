@@ -15,6 +15,7 @@
     {
         private AggregateCatalog _aggregateCatalog;
         private readonly string _path;
+        private readonly string _searchPattern;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecursiveDirectoryCatalog"/> class with <see cref="ComposablePartDefinition"/> objects based on all the DLL files in the specified directory path and its sub-directories.
@@ -36,6 +37,7 @@
             if (path == null) throw new ArgumentNullException("path");
 
             _path = path;
+            _searchPattern = searchPattern;
 
             Initialize(path, searchPattern);
         }
@@ -76,11 +78,10 @@
 
         public void Refresh()
         {
-            // TODO: SearchPattern
             // TODO: Remove deleted
             var newDirectoryCatalogs = GetFoldersRecursive(_path)
                 .Where(dir => _aggregateCatalog.Catalogs.Cast<DirectoryCatalog>().All(catalog => catalog.Path != dir))
-                .Select(dir => new DirectoryCatalog(dir));
+                .Select(dir => new DirectoryCatalog(dir, _searchPattern));
 
             newDirectoryCatalogs.ToList().ForEach(_aggregateCatalog.Catalogs.Add);
 
