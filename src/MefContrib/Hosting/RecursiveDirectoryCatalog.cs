@@ -74,6 +74,20 @@
             }
         }
 
+        public void Refresh()
+        {
+            // TODO: SearchPattern
+            // TODO: Remove deleted
+            var newDirectoryCatalogs = GetFoldersRecursive(_path)
+                .Where(dir => _aggregateCatalog.Catalogs.Cast<DirectoryCatalog>().All(catalog => catalog.Path != dir))
+                .Select(dir => new DirectoryCatalog(dir));
+
+            newDirectoryCatalogs.ToList().ForEach(_aggregateCatalog.Catalogs.Add);
+
+            _aggregateCatalog.Catalogs.Cast<DirectoryCatalog>().ToList()
+                .ForEach(catalog => catalog.Refresh());
+        }
+
         /// <summary>
         /// Gets the part definitions that are contained in the recursive directory catalog. (Overrides ComposablePartCatalog.Parts.)
         /// </summary>
